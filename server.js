@@ -10,7 +10,7 @@ var app	= express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;
+var port = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 8080;
 
 // routes
 var router = express.Router();

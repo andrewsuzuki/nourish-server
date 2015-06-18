@@ -1,0 +1,32 @@
+{
+  "name": "nourish-server",
+  "version": "0.1.0",
+  "description": "Server for running and syncronizing Nourish",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrewsuzuki/nourish-server"
+  },
+  "author": "Andrew Suzuki",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andrewsuzuki/nourish-server/issues"
+  },
+  "homepage": "https://github.com/andrewsuzuki/nourish-server",
+  "dependencies": {
+    "express": "~4.0.0",
+    "mongoose": "~3.6.13",
+    "body-parser": "~1.0.1"
+  },
+  "keywords": [
+    "Nourish",
+    "Nuorish",
+    "Norish",
+    "UConn",
+    "University of Connecticut",
+    "Dining",
+    "Food",
+    "Menu",
+    "Tracker"
+  ]
+}

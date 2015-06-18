@@ -10,6 +10,7 @@ var app	= express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
 var port = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 8080;
 
 // routes
@@ -24,5 +25,6 @@ router.get('/', function(req, res) {
 app.use('/api', router);
 
 // start server
-app.listen(port);
-console.log('Magic on port ' + port);
+app.listen( port, ipaddress, function() {
+	console.log((new Date()) + ' Server is listening on port ' + port + '...openshift ip/port is: ' + process.env.OPENSHIFT_NODEJS_IP + ':' + process.env.OPENSHIFT_NODEJS_PORT);
+});

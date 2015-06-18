@@ -1,18 +1,18 @@
-var express 	= require('express'),
-	bodyParser 	= require('body-parser'),
-	mongoose    = require('mongoose'),
-	fs			= require('fs');
+var express     = require('express'),
+    bodyParser  = require('body-parser'),
+    mongoose    = require('mongoose'),
+    fs          = require('fs');
 
 var envFile = './environment.json';
 
 var env;
 
 try {
-	env = JSON.parse(fs.readFileSync(envFile));
+    env = JSON.parse(fs.readFileSync(envFile));
 }
 catch (err) {
-	console.log(err.stack);
-	env = {};
+    console.log(err.stack);
+    env = {};
 }
 
 console.log('env:');
@@ -34,7 +34,7 @@ db.once('open', function callback () {
 
 // app
 
-var app	= express();
+var app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -46,7 +46,7 @@ var router = express.Router();
 
 // test
 router.get('/', function(req, res) {
-	res.json({ message: 'Nourish API' });
+    res.json({ message: 'Nourish API' });
 });
 
 // register routes

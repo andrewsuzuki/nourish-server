@@ -3,7 +3,7 @@ var express 	= require('express'),
 	mongoose    = require('mongoose');
 
 // db
-mongoose.connect('');
+// mongoose.connect('');
 
 var app	= express();
 

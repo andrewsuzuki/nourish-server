@@ -52,8 +52,8 @@ app.use(function(req, res, next) {
 app.listen(config.port);
 console.log('Magic on port ' + config.port);
 
-// cron
-// ----
+// cron scrape job
+// ---------------
 
 var scrapeJob = new cronJob({
 	start: false,

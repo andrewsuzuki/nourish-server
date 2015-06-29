@@ -14,4 +14,6 @@ module.exports = function(app, express) {
 	api.route('/items').get(function(req, res) {
 		
 	});
+
+	return api;
 };

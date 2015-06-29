@@ -4,8 +4,10 @@
 var express     = require('express'),
     bodyParser  = require('body-parser'),
     mongoose    = require('mongoose'),
-    config	= require('./config'),
-    path	= require('path');
+    cheerio	= require('cheerio'),
+    cronJob	= require('cron').CronJob,
+    request	= require('request'),
+    config	= require('./config');
 
 // database
 // --------
@@ -49,3 +51,16 @@ app.use(function(req, res, next) {
 
 app.listen(config.port);
 console.log('Magic on port ' + config.port);
+
+// cron
+// ----
+
+var scrapeJob = new cronJob({
+	start: false,
+	cronTime: config['scrape-time'],
+    	onTick: function() {
+		console.log('tick');
+	}
+});
+
+scrapeJob.start();

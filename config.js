@@ -3,6 +3,7 @@ var fs = require('fs');
 var config = {
 	'environment-json': './environment.json',
 	'port': process.env.PORT | 8080,
+	'scrape-time': '* * * * *',
 	'database': ''
 };
 

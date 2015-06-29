@@ -4,7 +4,7 @@
 var express     = require('express'),
     bodyParser  = require('body-parser'),
     mongoose    = require('mongoose'),
-    config	= require('./config')
+    config	= require('./config'),
     path	= require('path');
 
 // database

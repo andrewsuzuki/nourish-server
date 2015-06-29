@@ -4,7 +4,7 @@ var 	gulp	= require('gulp'),
 	print	= require('gulp-print');
 
 gulp.task('js', function() {
-	return gulp.src(['server.js', 'app/**/*.js'])
+	return gulp.src(['server.js', 'scrape/*.js', 'app/**/*.js'])
 	    .pipe(print())
 	    .pipe(jshint())
 	    .pipe(jshint.reporter('default'));

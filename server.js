@@ -4,9 +4,9 @@
 var express     = require('express'),
     bodyParser  = require('body-parser'),
     mongoose    = require('mongoose'),
-    cheerio	= require('cheerio'),
     cronJob	= require('cron').CronJob,
-    request	= require('request'),
+    cpExec	= require('child_process').exec,
+    path	= require('path'),
     config	= require('./config');
 
 // database
@@ -59,7 +59,17 @@ var scrapeJob = new cronJob({
 	start: false,
 	cronTime: config['scrape-time'],
     	onTick: function() {
-		console.log('tick');
+		console.log('tick -----------');
+		var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
+		child.stdout.on('data', function(data) {
+			console.log('stdout: ' + data);
+		});
+		child.stderr.on('data', function(data) {
+			console.log('stdout: ' + data);
+		});
+		child.on('close', function(code) {
+			console.log('closing code: ' + code);
+		});
 	}
 });
 

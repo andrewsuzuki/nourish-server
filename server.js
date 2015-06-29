@@ -1,76 +1,46 @@
+// require
+// -------
+
 var express     = require('express'),
     bodyParser  = require('body-parser'),
     mongoose    = require('mongoose'),
-    fs          = require('fs');
-
-// read environment variables
-
-var envFile = './environment.json';
-
-var env;
-
-try {
-    env = JSON.parse(fs.readFileSync(envFile));
-}
-catch (err) {
-    console.log(err.stack);
-    env = {};
-}
+    config	= require('./config')
+    path	= require('path');
 
 // db
+// --
 
-mongoose.connect(env.MONGO_URI);
+mongoose.connect(config.database);
 
-// app
+// app + middleware
+// ----------------
 
 var app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;
-
-// models
-
-var Item = require('./app/models/item');
+// configure our app to handle CORS requests
+app.use(function(req, res, next) {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+	next();
+});
 
 // routes
+// ------
 
-var router = express.Router();
+var apiRoutes = require('./app/routes/api')(app, express);
 
-// middleware to use for all requests
-router.use(function(req, res, next) {
-    // do logging
-    console.log('Something is happening.');
-    next(); // make sure we go to the next routes and don't stop here
+app.use('/api', apiRoutes);
+
+app.get('*', function(req, res) {
+	return res.json({ message: 'Nourish Server'});
 });
 
-router.get('/', function(req, res) {
-    res.json({ message: 'Nourish API' });   
-});
+// server
+// ------
 
-router.route('/items')
-
-    // create a menu item
-    .post(function(req, res) {
-        
-        var item = new Item();      // create a new instance of the Item model
-        item.name = req.body.name;  // set the item's name (comes from the request)
-
-        // save the item and check for errors
-        item.save(function(err) {
-            if (err)
-                res.send(err);
-
-            res.json({ message: 'Item created!' });
-        });
-        
-    });
-
-
-// register routes
-app.use('/api', router);
-
-// start server
-app.listen(port);
-console.log('Magic on port ' + port);
+app.listen(config.port);
+console.log('Magic on port ' + config.port);

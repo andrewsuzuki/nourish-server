@@ -1,8 +1,9 @@
-var mongoose	= require('mongoose');
-var Schema		= mongoose.Schema;
+var mongoose    = require('mongoose');
+var Schema      = mongoose.Schema;
 
 var MealSchema = new Schema({
-	name: String
+        type: { type: Number, default: 0 },
+        date: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Meal', MealSchema);

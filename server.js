@@ -7,8 +7,8 @@ var express     = require('express'),
     config	= require('./config')
     path	= require('path');
 
-// db
-// --
+// database
+// --------
 
 mongoose.connect(config.database);
 
@@ -35,8 +35,13 @@ var apiRoutes = require('./app/routes/api')(app, express);
 
 app.use('/api', apiRoutes);
 
-app.get('*', function(req, res) {
+app.get('/', function(req, res) {
 	return res.json({ message: 'Nourish Server'});
+});
+
+// handle 404s
+app.use(function(req, res, next) {
+	res.status(404).json({ message: '404 not found' });
 });
 
 // server

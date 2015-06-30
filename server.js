@@ -59,16 +59,15 @@ var scrapeJob = new cronJob({
 	start: false,
 	cronTime: config['scrape-time'],
     	onTick: function() {
-		console.log('tick -----------');
 		var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
 		child.stdout.on('data', function(data) {
-			console.log('stdout: ' + data);
+			process.stdout.write(data);
 		});
 		child.stderr.on('data', function(data) {
-			console.log('stdout: ' + data);
+			console.log('stderr ' + data);
 		});
 		child.on('close', function(code) {
-			console.log('closing code: ' + code);
+			console.log('scrape exit code: ' + code);
 		});
 	}
 });

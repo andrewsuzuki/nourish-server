@@ -10,6 +10,13 @@ gulp.task('js', function() {
 	    .pipe(jshint.reporter('default'));
 });
 
+gulp.task('scrape', function() {
+	nodemon({
+		script: 'scrape/scraper.js',
+		ext: 'js'
+	});
+});
+
 gulp.task('nodemon', function() {
 	nodemon({
 		script: 'server.js',

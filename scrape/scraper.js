@@ -1,9 +1,13 @@
 var     rp = require('request-promise'),
         cheerio = require('cheerio'),
-	Promise = require('bluebird');
+	Promise = require('bluebird'),
+	mongoose = require('mongoose'),
+	config = require('../config');
 
 console.log('Scraping...');
 console.log('-----------');
+
+//mongoose.connect(config.database);
 
 String.prototype.toTitleCase = function() {
         return this.replace(/\w\S*/g, function(txt) {
@@ -28,8 +32,8 @@ var locations = [
 
 var mealTypes = [ 'Breakfast', 'Lunch', 'Dinner', 'Brunch' ];
 
-var scrapeMeal = function(mealType) {
-        murl = formUrl(16, '06/30/2015', mealType);
+var scrapeMeal = function(hall, date, mealType) {
+        murl = formUrl(hall, date, mealType);
 
 	// keep track of label scrape promises
 	label_promises = [];
@@ -39,7 +43,8 @@ var scrapeMeal = function(mealType) {
 
 		var $ = cheerio.load(html);
 		var lastcat;
-		$('body > table > tr').eq(1).children('td').eq(1).children('div').eq(1).children('table').eq(0).children('form').first().children('tr').each(function(i, el) {
+		var trs = $('body > table > tr').eq(1).children('td').eq(1).children('div').eq(1).children('table').eq(0).children('form').first().children('tr');
+		trs.each(function(i, el) {
 			if (i === 0 || i === 1) return true; // skip first two table header rows
 
 			var tdi = $(el).children('td').first().find('> table > tr > td > table > tr > td');
@@ -67,45 +72,30 @@ var scrapeMeal = function(mealType) {
 
 		return meal;
 	}).then(function(meal) {
-		// wait for all of the label scrapes to finish
+		// wait for all label scrape promises to be fulfilled
 		Promise.all(label_promises).then(function() {
-			console.log('\n' + mealType + ' ----------------------\n');
-			console.log(meal);
-			// TODO: add to database here
+			// all done scraping, now save everything
+			mealMergeDB(hall, date, mealType, meal);
 		});
 	});
+};
+
+var mealMergeDB = function(hall, date, mealType, meal) {
+	console.log('---');
+	console.log('Hall: ' + hall);
+	console.log('Date: ' + date);
+	console.log('Meal type: ' + mealType);
+	console.log('Meal: ');
+	console.log(meal);
 };
 
 var scrapeLabelPromise = function(url, cat) {
         return rp(url)
 		.then(function(html) {
                         var label = {
-                                nutrition: {
-                                        serving_size: undefined,
-                                        calories: undefined,
-                                        calories_from_fat: undefined,
-                                },
-                                composition: {
-					/*
-					 * total_fat: { amount: 0, pdv: 0 },
-					 * sat_fat: { amount: 0, pdv: 0 },
-					 * trans_fat: { amount: 0, pdv: 0 },
-					 * cholesterol: { amount: 0, pdv: 0 },
-					 * sodium: { amount: 0, pdv: 0 },
-					 * total_carb: { amount: 0, pdv: 0 },
-					 * dietary_fiber: { amount: 0, pdv: 0 },
-					 * sugars: { amount: 0, pdv: 0 },
-					 * protein: { amount: 0, pdv: 0 },
-					 */
-                                },
-				vitamins: {
-					/*
-					 * a: 0,
-					 * b: 0,
-					 * calc: 0,
-					 * iron: 0,
-					 */
-				},
+                                nutrition: { },
+                                composition: { },
+				vitamins: { },
 				allergens: undefined,
                         };
 
@@ -224,4 +214,7 @@ var scrapeLabelAllergens = function($, label) {
 	}
 };
 
-mealTypes.forEach(scrapeMeal);
+// temporary test
+mealTypes.forEach(function(mealType) {
+	scrapeMeal(16, '06/30/2015', mealType);
+});

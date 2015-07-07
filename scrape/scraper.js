@@ -82,13 +82,45 @@ var mealMergeDB = function(hall, date, mealType, meal) {
 	console.log('Meal type: ' + mealType);
 
 	if (meal.length) {
-		Item.collection.insert(meal, function(err, docs) {
-			if (err) {
-				console.log('item collection insertion error');
-				console.log(err);
-			} else {
-				console.log('success (item collection insertion)');
-			}
+		// Create new item function
+		var create = function(item) {
+			Item.create(item, function(err, docs) {
+				if (err) {
+					console.log('Could not add item ' + item.name + ':');
+					console.log(err);
+				} else {
+					console.log('Added item ' + item.name);
+				}
+			});
+		};
+
+		// Loop items
+		meal.forEach(function(item, i) {
+			// Determine if item already exists by checking each field and sub-field
+			Item.findOne({
+				name: item.name,
+				cat: item.cat,
+				'label.allergens': item.label.allergens,
+				'label.vitamins': item.label.vitamins,
+				'label.nutrition': item.label.nutrition,
+				'label.composition.total_fat': item.label.composition.total_fat,
+				'label.composition.total_carb': item.label.composition.total_carb,
+				'label.composition.sat_fat': item.label.composition.sat_fat,
+				'label.composition.dietary_fiber': item.label.composition.dietary_fiber,
+				'label.composition.trans_fat': item.label.composition.trans_fat,
+				'label.composition.sugars': item.label.composition.sugars,
+				'label.composition.cholesterol': item.label.composition.cholesterol,
+				'label.composition.protein': item.label.composition.protein,
+				'label.composition.sodium': item.label.composition.sodium,
+			}, function(err, found) {
+				if (found === null) {
+					// Item not found; create new
+					create(item);
+				} else {
+					// Existing item found
+					console.log('Found existing item ' + item.name);
+				}
+			});
 		});
 	} else {
 		console.log('Meal not found.');

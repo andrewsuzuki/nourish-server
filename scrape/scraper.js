@@ -1,3 +1,6 @@
+// TODO: De-spaghetti-code this file
+// Manage promises better; study bluebird api
+
 var     rp	= require('request-promise'),
         cheerio	= require('cheerio'),
 	Promise	= require('bluebird'),
@@ -8,12 +11,10 @@ var     rp	= require('request-promise'),
 	Item	= require('../app/models/Item');
 
 console.log('Scraping...');
-console.log('-----------');
 
 // Connect to database
 mongoose.connect(config.database);
 
-// A major meh
 String.prototype.toTitleCase = function() {
         return this.replace(/\w\S*/g, function(txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -34,7 +35,7 @@ var scrapeMeal = function(hall, date, mealType) {
 	// keep track of label scrape promises
 	label_promises = [];
 
-        rp(murl).then(function(html) {
+        return rp(murl).then(function(html) {
 		var meal = [];
 
 		var $ = cheerio.load(html);
@@ -68,12 +69,14 @@ var scrapeMeal = function(hall, date, mealType) {
 		return meal;
 	}).then(function(meal) {
 		// wait for all label scrape promises to be fulfilled
-		Promise.all(label_promises).then(function() {
+		return Promise.all(label_promises).then(function() {
 			// all done scraping, now save everything
 			mealMergeDB(hall, date, mealType, meal);
 		});
 	});
 };
+
+var subwait = 0;
 
 var mealMergeDB = function(hall, date, mealType, meal) {
 	console.log('---');
@@ -82,17 +85,16 @@ var mealMergeDB = function(hall, date, mealType, meal) {
 	console.log('Meal type: ' + mealType);
 
 	if (meal.length) {
-		// Create new item function
-		var create = function(item) {
-			Item.create(item, function(err, docs) {
-				if (err) {
-					console.log('Could not add item ' + item.name + ':');
-					console.log(err);
-				} else {
-					console.log('Added item ' + item.name);
-				}
-			});
+		var subcount = 0;
+		var subtrack = function() {
+			subcount += 1;
+			subwait -= 1;
+			if (meal.length === subcount) {
+				track();
+			}
 		};
+
+		subwait += meal.length;
 
 		// Loop items
 		meal.forEach(function(item, i) {
@@ -115,15 +117,25 @@ var mealMergeDB = function(hall, date, mealType, meal) {
 			}, function(err, found) {
 				if (found === null) {
 					// Item not found; create new
-					create(item);
+					Item.create(item, function(err, docs) {
+						if (err) {
+							console.log('Could not add item ' + item.name + ':');
+							console.log(err);
+						} else {
+							console.log('Added item ' + item.name);
+						}
+						subtrack();
+					});
 				} else {
 					// Existing item found
 					console.log('Found existing item ' + item.name);
+					subtrack();
 				}
 			});
 		});
 	} else {
 		console.log('Meal not found.');
+		track();
 	}
 };
 
@@ -250,7 +262,19 @@ var scrapeLabelAllergens = function($, label) {
 	label.allergens = allergens || '';
 };
 
-// temporary test
+var icps = [];
+function track() {
+	if (icps.length === mealTypes.length && subwait === 0) {
+		Promise.all(icps).then(function() {
+			console.log('Scrape finished successfully.');
+			process.exit();
+		});
+	}
+};
+
 mealTypes.forEach(function(mealType) {
-	scrapeMeal(16, '06/30/2015', mealType);
+	scrapeMeal(16, '07/07/2015', mealType).then(function(icp) {
+		// promise for completion of individual item label scrapes
+		icps.push(icp);
+	});
 });

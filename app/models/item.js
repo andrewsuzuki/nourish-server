@@ -3,11 +3,12 @@ var Schema      = mongoose.Schema;
 
 var ItemSchema = new Schema({
         name: String,
+	cat: String,
 	label: {
 		nutrition: {
 			serving_size: String,
-			calories: Number,
-			calories_from_fat: Number,
+			calories: String,
+			calories_from_fat: String,
 		},
 		composition: {
 			 total_fat: { amount: String, pdv: Number },
@@ -22,14 +23,14 @@ var ItemSchema = new Schema({
 		},
 		vitamins: {
 			 a: Number,
-			 b: Number,
+			 c: Number,
 			 calc: Number,
 			 iron: Number,
 		},
 		allergens: String
 	},
     	// pop:
-    	Hall: { type: Schema.Types.ObjectId, ref: 'Hall' }
+	Hall: { type: Schema.Types.ObjectId, ref: 'Hall' }
 });
 
 module.exports = mongoose.model('Item', ItemSchema);

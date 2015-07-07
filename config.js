@@ -4,7 +4,17 @@ var config = {
 	'environment-json': './environment.json',
 	'port': process.env.PORT | 8080,
 	'scrape-time': '* * * * *',
-	'database': ''
+	'database': '',
+	'locations': {
+		1: 'Whitney',
+		3: 'Buckley',
+		5: 'McMahon',
+		6: 'Putname',
+		7: 'North',
+		15: 'Northwest',
+		16: 'South',
+		42: 'Gelfenbien Commons (Towers)',
+	}
 };
 
 var env = JSON.parse(fs.readFileSync(config['environment-json']));

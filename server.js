@@ -55,21 +55,23 @@ console.log('Magic on port ' + config.port);
 // cron scrape job
 // ---------------
 
-var scrapeJob = new cronJob({
-	start: false,
-	cronTime: config['scrape-time'],
-    	onTick: function() {
-		var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
-		child.stdout.on('data', function(data) {
-			process.stdout.write(data);
-		});
-		child.stderr.on('data', function(data) {
-			console.log('stderr ' + data);
-		});
-		child.on('close', function(code) {
-			console.log('scrape exit code: ' + code);
-		});
-	}
-});
+if (process.env.NOSCRAPE !== 'true') {
+	var scrapeJob = new cronJob({
+		start: false,
+		cronTime: config['scrape-time'],
+		onTick: function() {
+			var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
+			child.stdout.on('data', function(data) {
+				process.stdout.write(data);
+			});
+			child.stderr.on('data', function(data) {
+				console.log('stderr ' + data);
+			});
+			child.on('close', function(code) {
+				console.log('scrape exit code: ' + code);
+			});
+		}
+	});
 
-scrapeJob.start();
+	scrapeJob.start();
+}

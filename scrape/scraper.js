@@ -1,35 +1,31 @@
-var     rp = require('request-promise'),
-        cheerio = require('cheerio'),
-	Promise = require('bluebird'),
-	mongoose = require('mongoose'),
-	config = require('../config');
+var     rp	= require('request-promise'),
+        cheerio	= require('cheerio'),
+	Promise	= require('bluebird'),
+	mongoose= require('mongoose'),
+	config	= require('../config'),
+	Hall	= require('../app/models/Hall'),
+	Meal	= require('../app/models/Meal'),
+	Item	= require('../app/models/Item');
 
 console.log('Scraping...');
 console.log('-----------');
 
-//mongoose.connect(config.database);
+// Connect to database
+mongoose.connect(config.database);
 
+// A major meh
 String.prototype.toTitleCase = function() {
         return this.replace(/\w\S*/g, function(txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
 };
 
+// Form meal menu page url
 var formUrl = function(locationNum, date, mealType) {
         return 'http://nutritionanalysis.dds.uconn.edu/longmenu.asp?naFlag=1&locationNum='+locationNum+'&dtdate='+date+'&mealName='+mealType;
 };
 
-var locations = [
-        1, // Whitney
-        3, // Buckley
-        5, // McMahon
-        6, // Putnam
-        7, // North
-        15, // Northwest
-        16, // South
-        42, // Gelfenbien Commons (Towers)
-];
-
+// List of meal types
 var mealTypes = [ 'Breakfast', 'Lunch', 'Dinner', 'Brunch' ];
 
 var scrapeMeal = function(hall, date, mealType) {
@@ -59,7 +55,6 @@ var scrapeMeal = function(hall, date, mealType) {
 					// only add item to menu after nutrition label data is scraped
 					meal.push({
 						'name': name,
-						'href': href,
 						'cat': labelcat[1],
 						'label': labelcat[0],
 					});
@@ -85,8 +80,19 @@ var mealMergeDB = function(hall, date, mealType, meal) {
 	console.log('Hall: ' + hall);
 	console.log('Date: ' + date);
 	console.log('Meal type: ' + mealType);
-	console.log('Meal: ');
-	console.log(meal);
+
+	if (meal.length) {
+		Item.collection.insert(meal, function(err, docs) {
+			if (err) {
+				console.log('item collection insertion error');
+				console.log(err);
+			} else {
+				console.log('success (item collection insertion)');
+			}
+		});
+	} else {
+		console.log('Meal not found.');
+	}
 };
 
 var scrapeLabelPromise = function(url, cat) {
@@ -134,16 +140,16 @@ var scrapeLabelVitamins = function(table, label) {
 	var iron = tds.eq(3).find('> table > tr > td > li').children('font');
 
 	if (vit_a.first().text() == 'Vit A') { // vitamin a
-		label.vitamins.a = vit_a.eq(1).text().trim().slice(0, -1);
+		label.vitamins.a = parseInt(vit_a.eq(1).text().trim().slice(0, -1));
 	}
 	if (vit_c.first().text() == 'Vit C') { // vitamin c
-		label.vitamins.c = vit_c.eq(1).text().trim().slice(0, -1);
+		label.vitamins.c = parseInt(vit_c.eq(1).text().trim().slice(0, -1));
 	}
 	if (calc.first().text() == 'Calc') { // calcium
-		label.vitamins.calc = calc.eq(1).text().trim().slice(0, -1);
+		label.vitamins.calc = parseInt(calc.eq(1).text().trim().slice(0, -1));
 	}
 	if (iron.first().text() == 'Iron') { // iron
-		label.vitamins.iron = iron.eq(1).text().trim().slice(0, -1);
+		label.vitamins.iron = parseInt(iron.eq(1).text().trim().slice(0, -1));
 	}
 };
 
@@ -157,25 +163,25 @@ var scrapeLabelComposition = function(table, label) {
 	if (one.eq(0).children('font').first().text().trim() == 'Total Fat') {
 		label.composition.total_fat = {
 			amount: one.eq(0).children('font').eq(1).text().trim(),
-			pdv: one.eq(1).children('font').eq(0).text().trim()
+			pdv: parseInt(one.eq(1).children('font').eq(0).text().trim())
 		};
 	}
 	if (one.eq(2).children('font').first().text().trim() == 'Tot. Carb.') {
 		label.composition.total_carb = {
 			amount: one.eq(2).children('font').eq(1).text().trim(),
-			pdv: one.eq(3).children('font').eq(0).text().trim()
+			pdv: parseInt(one.eq(3).children('font').eq(0).text().trim())
 		};
 	}
 	if (two.eq(0).children('font').first().text().trim() == 'Sat. Fat') {
 		label.composition.sat_fat = {
 			amount: two.eq(0).children('font').eq(1).text().trim(),
-			pdv: two.eq(1).children('font').eq(0).text().trim()
+			pdv: parseInt(two.eq(1).children('font').eq(0).text().trim())
 		};
 	}
 	if (two.eq(2).children('font').first().text().trim() == 'Dietary Fiber') {
 		label.composition.dietary_fiber = {
 			amount: two.eq(2).children('font').eq(1).text().trim(),
-			pdv: two.eq(3).children('font').eq(0).text().trim()
+			pdv: parseInt(two.eq(3).children('font').eq(0).text().trim())
 		};
 	}
 	if (three.eq(0).children('font').first().text().trim() == 'Trans Fat') {
@@ -191,7 +197,7 @@ var scrapeLabelComposition = function(table, label) {
 	if (four.eq(0).children('font').first().text().trim() == 'Cholesterol') {
 		label.composition.cholesterol = {
 			amount: four.eq(0).children('font').eq(1).text().trim(),
-			pdv: four.eq(1).children('font').eq(0).text().trim()
+			pdv: parseInt(four.eq(1).children('font').eq(0).text().trim())
 		};
 	}
 	if (four.eq(2).children('font').first().text().trim() == 'Protein') {
@@ -202,16 +208,14 @@ var scrapeLabelComposition = function(table, label) {
 	if (five.eq(0).children('font').first().text().trim() == 'Sodium') {
 		label.composition.sodium = {
 			amount: five.eq(0).children('font').eq(1).text().trim(),
-			pdv: five.eq(1).children('font').eq(0).text().trim()
+			pdv: parseInt(five.eq(1).children('font').eq(0).text().trim())
 		};
 	}
 };
 
 var scrapeLabelAllergens = function($, label) {
 	var allergens = $('body > table').eq(1).find('> tr > td > span').eq(1).text().trim();
-	if (allergens) {
-		label.allergens = allergens;
-	}
+	label.allergens = allergens || '';
 };
 
 // temporary test

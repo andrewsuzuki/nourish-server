@@ -11,9 +11,27 @@ module.exports = function(app, express) {
 		res.json({ message: 'Nourish API' });
 	});
 
-	api.route('/items').get(function(req, res) {
-		
-	});
+	api.route('/halls')
+		.get(function(req, res) {
+			Hall.find(function(err, halls) {
+				if (err) {
+					res.send(err);
+				}
+
+				res.send(halls);
+			});
+		});
+
+	api.route('/items')
+		.get(function(req, res) {
+			Item.find(function(err, items) {
+				if (err) {
+					res.send(err);
+				}
+
+				res.send(items);
+			});
+		});
 
 	return api;
 };

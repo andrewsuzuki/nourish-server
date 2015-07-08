@@ -110,6 +110,10 @@ var mealMergeDB = function(hall, date, mealType, items) {
                 // All set
                 //Meal.create({ type: config.mealTypes.indexOf(mealType) }, function(err, meal) {
                 Meal.create({ type: config.mealTypes.indexOf(mealType) }).then(function(meal) {
+                    // relate meal to parent hall
+                    found_hall.meals.push(meal);
+                    found_hall.save();
+
                     subwait += items.length;
 
                     // Loop items: check existence and create if DNE

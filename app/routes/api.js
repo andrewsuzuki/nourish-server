@@ -13,20 +13,23 @@ module.exports = function(app, express) {
 
 	api.route('/halls')
 		.get(function(req, res) {
-			Hall.find(function(err, halls) {
-				if (err) {
-					res.send(err);
-				}
+			Hall
+                .find({})
+                .populate({ path: 'meals', select: 'date type' })
+                .then(function(err, halls) {
+                    if (err) {
+                        res.send(err);
+                    }
 
-				res.send(halls);
-			});
+                    res.send(halls);
+                })
 		});
 
 	api.route('/meals')
 		.get(function(req, res) {
 			Meal
 				.find({})
-				.populate('items', 'name')
+				.populate({ path: 'items', select: 'name' })
 				.then(function(err, meals) {
 					if (err) {
 						res.send(err);

@@ -1,45 +1,45 @@
 {
-  "name": "nourish-server",
-  "version": "0.1.0",
-  "description": "Server for running and syncronizing Nourish",
-  "main": "server.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/andrewsuzuki/nourish-server"
-  },
-  "author": "Andrew Suzuki",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/andrewsuzuki/nourish-server/issues"
-  },
-  "homepage": "https://github.com/andrewsuzuki/nourish-server",
-  "dependencies": {
-    "bluebird": "^2.9.30",
-    "body-parser": "~1.0.1",
-    "cheerio": "^0.19.0",
-    "cron": "^1.0.9",
-    "express": "~4.0.0",
-    "jsonwebtoken": "^5.0.2",
-    "mongoose": "~4.0.2",
-    "morgan": "~1.5.0",
-    "request-promise": "^0.4.2"
-  },
-  "start": "node server.js",
-  "keywords": [
-    "Nourish",
-    "Nuorish",
-    "Norish",
-    "UConn",
-    "University of Connecticut",
-    "Dining",
-    "Food",
-    "Menu",
-    "Tracker"
-  ],
-  "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-jshint": "^1.11.0",
-    "gulp-nodemon": "^2.0.3",
-    "gulp-print": "^1.1.0"
-  }
+    "name": "nourish-server",
+    "version": "0.1.0",
+    "description": "Server for running and syncronizing Nourish",
+    "main": "server.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andrewsuzuki/nourish-server"
+    },
+    "author": "Andrew Suzuki",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andrewsuzuki/nourish-server/issues"
+    },
+    "homepage": "https://github.com/andrewsuzuki/nourish-server",
+    "dependencies": {
+        "bluebird": "^2.9.30",
+        "body-parser": "~1.0.1",
+        "cheerio": "^0.19.0",
+        "cron": "^1.0.9",
+        "express": "~4.0.0",
+        "jsonwebtoken": "^5.0.2",
+        "mongoose": "~4.0.2",
+        "morgan": "~1.5.0",
+        "request-promise": "^0.4.2"
+    },
+    "start": "node server.js",
+    "keywords": [
+        "Nourish",
+        "Nuorish",
+        "Norish",
+        "UConn",
+        "University of Connecticut",
+        "Dining",
+        "Food",
+        "Menu",
+        "Tracker"
+    ],
+    "devDependencies": {
+        "gulp": "^3.9.0",
+        "gulp-jshint": "^1.11.0",
+        "gulp-nodemon": "^2.0.3",
+        "gulp-print": "^1.1.0"
+    }
 }

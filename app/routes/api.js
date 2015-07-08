@@ -22,6 +22,17 @@ module.exports = function(app, express) {
 			});
 		});
 
+	api.route('/meals')
+		.get(function(req, res) {
+			Meal.find(function(err, meals) {
+				if (err) {
+					res.send(err);
+				}
+
+				res.send(meals);
+			});
+		});
+
 	api.route('/items')
 		.get(function(req, res) {
 			Item.find(function(err, items) {

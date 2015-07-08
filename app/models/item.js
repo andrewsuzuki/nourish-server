@@ -28,9 +28,7 @@ var ItemSchema = new Schema({
 			 iron: Number,
 		},
 		allergens: String
-	},
-    	// pop:
-	Hall: { type: Schema.Types.ObjectId, ref: 'Hall' }
+	}
 });
 
 module.exports = mongoose.model('Item', ItemSchema);

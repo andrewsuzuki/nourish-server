@@ -14,7 +14,9 @@ var config = {
 		15: 'Northwest',
 		16: 'South',
 		42: 'Gelfenbien Commons (Towers)',
-	}
+	},
+	'mealTypes': [ 'Breakfast', 'Lunch', 'Dinner', 'Brunch' ],
+	'advanceScrapeDays': 6 // advance days to attempt to scrape after today
 };
 
 var env = JSON.parse(fs.readFileSync(config['environment-json']));

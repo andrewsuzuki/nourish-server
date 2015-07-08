@@ -26,9 +26,6 @@ var formUrl = function(locationNum, date, mealType) {
         return 'http://nutritionanalysis.dds.uconn.edu/longmenu.asp?naFlag=1&locationNum='+locationNum+'&dtdate='+date+'&mealName='+mealType;
 };
 
-// List of meal types
-var mealTypes = [ 'Breakfast', 'Lunch', 'Dinner', 'Brunch' ];
-
 var scrapeMeal = function(hall, date, mealType) {
         murl = formUrl(hall, date, mealType);
 
@@ -262,19 +259,25 @@ var scrapeLabelAllergens = function($, label) {
 	label.allergens = allergens || '';
 };
 
-var icps = [];
+var mealscrape_n = 0; // Number of calls to scrapeMeal
+var icps = []; // Keep track of item label scrape promises
 function track() {
-	if (icps.length === mealTypes.length && subwait === 0) {
+	if (icps.length === mealscrape_n && subwait === 0) {
+		// All item label scrapes have been started, now wait for them
 		Promise.all(icps).then(function() {
+			// Notify and exit process
 			console.log('Scrape finished successfully.');
 			process.exit();
 		});
 	}
 };
 
-mealTypes.forEach(function(mealType) {
-	scrapeMeal(16, '07/07/2015', mealType).then(function(icp) {
-		// promise for completion of individual item label scrapes
-		icps.push(icp);
+Object.keys(config.locations).forEach(function(location_id) {
+	config.mealTypes.forEach(function(mealType) {
+		mealscrape_n += 1;
+		scrapeMeal(location_id, '07/07/2015', mealType).then(function(icp) {
+			// promise for completion of individual item label scrapes
+			icps.push(icp);
+		});
 	});
 });

@@ -1,7 +1,7 @@
-var	config		= require('../config'),
-	mongoose	= require('mongoose'),
-	Promise		= require('bluebird'),
-	Hall		= require('../app/models/Hall');
+var	config		= require('../config');
+var mongoose	= require('mongoose');
+var Promise		= require('bluebird');
+var Hall	   	= require('../app/models/Hall');
 
 // Connect to database
 mongoose.connect(config.database);

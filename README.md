@@ -1,6 +1,6 @@
 # nourish-server
 
-Node/Express Server for running and syncronizing Nourish.
+Node/Express Server for running and synchronizing Nourish.
 
 Mobile app: [nourish-app](https://github.com/andrewsuzuki/nourish-app)
 

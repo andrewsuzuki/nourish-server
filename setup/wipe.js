@@ -1,14 +1,14 @@
-var	config		= require('../config'),
-	mongoose	= require('mongoose'),
-	Hall		= require('../app/models/Hall'),
-	Meal		= require('../app/models/Meal'),
-	Item		= require('../app/models/Item');
+var	config		= require('../config');
+var mongoose	= require('mongoose');
+var Hall			= require('../app/models/Hall');
+var Meal			= require('../app/models/Meal');
+var Item			= require('../app/models/Item');
 
 // Connect to database
 mongoose.connect(config.database);
 
 module.exports = function() {
-	console.log('wiping...');
+	console.log('Wiping...');
 
 	var dc = 0;
 

@@ -1,74 +1,100 @@
-var express     = require('express'),
-    bodyParser  = require('body-parser'),
-    mongoose    = require('mongoose'),
-    cronJob     = require('cron').CronJob,
-    cpExec      = require('child_process').exec,
-    path        = require('path'),
-    config      = require('./config');
+var express     = require('express');
+var app         = express();
+var http        = require('http').Server(app);
+var io          = require('socket.io')(http);
+var bodyParser  = require('body-parser');
+var mongoose    = require('mongoose');
+var cronJob     = require('cron').CronJob;
+var cpExec      = require('child_process').exec;
+var path        = require('path');
+var config      = require('./config');
 
-// database
-// --------
+/**
+* Database
+*/
 
 mongoose.connect(config.database);
 
-// app + middleware
-// ----------------
+/**
+* Middleware
+*/
 
-var app = express();
-
+// Set up body parser to interpret incoming json
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// configure our app to handle CORS requests
+// Configure our app to handle CORS requests
 app.use(function(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
-    next();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+  next();
 });
 
-// routes
-// ------
+/**
+* Routes
+*/
 
+// Grab out API routes
 var apiRoutes = require('./app/routes/api')(app, express);
 
+// Use API routes
 app.use('/api', apiRoutes);
 
+// Root endpoint
 app.get('/', function(req, res) {
-    return res.json({ message: 'Nourish Server'});
+  return res.json({ message: 'Nourish Server'});
 });
 
-// handle 404s
+// Catch-all (send 404)
 app.use(function(req, res, next) {
-    res.status(404).json({ message: '404 not found' });
+  res.status(404).json({ message: '404 not found' });
 });
 
-// server
-// ------
+/**
+* Chat
+*/
 
-app.listen(config.port);
-console.log('Magic on port ' + config.port);
+var chat = require('./app/chat')(io);
 
-// cron scrape job
-// ---------------
+/**
+* Server
+*/
 
+http.listen(config.port, function() {
+  console.log('Magic on port ' + config.port);
+});
+
+/**
+* Cron scrape job
+*/
+
+// Only scrape if our env var allows it
 if (process.env.NOSCRAPE !== 'true') {
-    var scrapeJob = new cronJob({
-        start: false,
-        cronTime: config['scrape-time'],
-        onTick: function() {
-            var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
-            child.stdout.on('data', function(data) {
-                process.stdout.write(data);
-            });
-            child.stderr.on('data', function(data) {
-                console.log('stderr ' + data);
-            });
-            child.on('close', function(code) {
-                console.log('scrape exit code: ' + code);
-            });
-        }
-    });
+  // Create cron job
+  var scrapeJob = new cronJob({
+    // Don't start immediately
+    start: false,
+    // Scheduled according to config
+    cronTime: config['scrape-time'],
+    onTick: function() {
+      // Create child process running our scraper script
+      var child = cpExec('node ' + path.join('.', 'scrape', 'scraper.js'));
+      // For now, write incoming data to stdout
+      child.stdout.on('data', function(data) {
+        process.stdout.write(data); // TODO
+      });
+      // For now, write incoming errors to stdout
+      child.stderr.on('data', function(data) {
+        console.log('stderr ' + data); // TODO
+      });
+      // Report scraper exit code
+      child.on('close', function(code) {
+        console.log('Scraper exit code: ' + code);
+      });
+    }
+  });
 
-    scrapeJob.start();
+  // Start the cron job immediately
+  scrapeJob.start();
 }

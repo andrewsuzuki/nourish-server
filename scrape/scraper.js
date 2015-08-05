@@ -19,8 +19,8 @@ String.prototype.toTitleCase = function() {
 };
 
 // Form meal menu page url
-var formUrl = function(locationNum, date, mealType) {
-  return 'http://nutritionanalysis.dds.uconn.edu/longmenu.asp?naFlag=1&locationNum='+locationNum+'&dtdate='+date+'&mealName='+mealType;
+var formUrl = function(hall, date, mealType) {
+  return 'http://nutritionanalysis.dds.uconn.edu/longmenu.asp?naFlag=1&locationNum='+hall.id+'&dtdate='+date+'&mealName='+mealType;
 };
 
 var scrapeMeal = function(hall, date, mealType) {
@@ -74,7 +74,7 @@ var subwait = 0;
 
 var mealMergeDB = function(hall, date, mealType, items) {
   console.log('---');
-  console.log('Hall: ' + hall);
+  console.log('Hall: ' + hall.name);
   console.log('Date: ' + date);
   console.log('Meal type: ' + mealType);
 
@@ -101,10 +101,10 @@ var mealMergeDB = function(hall, date, mealType, items) {
       });
     };
 
-    // Find hall
-    Hall.findOne({ name: config.locations[hall] }).then(function(found_hall) {
+    // Find hall by name
+    Hall.findOne({ name: hall.name }).then(function(found_hall) {
       if (found_hall === null) {
-        // Hall not found
+        // Hall not found, throw error
         throw new Error();
       } else {
         // All set
@@ -145,17 +145,17 @@ var mealMergeDB = function(hall, date, mealType, items) {
                 console.log('Found existing item ' + item.name);
                 subtrack(meal);
               }
-            }).then(null, function(err) { // Catch errors (mPromise has no .catch -- lame)
+            }).then(null, function(err) { // Catch errors (mPromise has no catch)
               // Error looking up, so make a new item
               createItem(meal, item);
             });
           });
-        }).then(null, function(err) { // Catch errors (mPromise has no .catch -- lame)
+        }).then(null, function(err) { // Catch errors (mPromise has no catch)
           console.log('Error creating meal.');
         });
       }
-    }).then(null, function(err) { // Catch errors (mPromise has no .catch -- lame)
-      console.log('Error finding hall: ' + config.locations[hall]);
+    }).then(null, function(err) { // Catch errors (mPromise has no catch)
+      console.log('Error finding hall: ' + hall.name);
     });
   } else {
     console.log('Meal not found.');
@@ -298,10 +298,10 @@ function track() {
   }
 };
 
-Object.keys(config.locations).forEach(function(location_id) {
+config.halls.forEach(function(hall) {
   config.mealTypes.forEach(function(mealType) {
     mealscrape_n += 1;
-    scrapeMeal(location_id, '07/07/2015', mealType).then(function(icp) {
+    scrapeMeal(hall, '07/07/2015', mealType).then(function(icp) {
       // promise for completion of individual item label scrapes
       icps.push(icp);
     });

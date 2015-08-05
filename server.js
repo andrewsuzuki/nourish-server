@@ -10,7 +10,7 @@ var path        = require('path');
 var config      = require('./config');
 
 /**
-* Database
+* Database connection
 */
 
 mongoose.connect(config.database);
@@ -55,7 +55,7 @@ app.use(function(req, res, next) {
 * Chat
 */
 
-var chat = require('./app/chat')(io);
+require('./app/chat')(io);
 
 /**
 * Server

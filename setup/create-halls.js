@@ -7,21 +7,27 @@ var Hall	   	= require('../app/models/Hall');
 mongoose.connect(config.database);
 
 module.exports = function() {
-	console.log('creating halls...');
+	console.log('Creating halls...');
 
-	var hc_promises = [];
+	var hallCreatePromises = [];
 
-	Object.keys(config.locations).forEach(function(hall_name, i) {
-		hc_promises.push(Hall.create({ name: config.locations[hall_name] }, function(err) {
+	config.halls.forEach(function(hall) {
+		// Create Hall with name; store promise
+		var prom = Hall.create({ name: hall.name }, function(err) {
 			if (err) {
-				console.log('error creating hall ' + config.locations[hall_name]);
+				console.log('Error creating hall (' + hall.name + ')');
 				console.log(err);
 			}
-		}));
+		});
+
+		// Push promise onto hallCreatePromises
+		hallCreatePromises.push(prom);
 	});
 
-	Promise.all(hc_promises).then(function() {
-		console.log('done!');
+	// Wait for all hallCreatePromises to complete
+	Promise.all(hallCreatePromises).then(function() {
+		// Notify and exit
+		console.log('Done!');
 		process.exit();
 	});
 };

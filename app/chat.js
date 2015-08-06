@@ -5,12 +5,12 @@ module.exports = function(io) {
   io.on('connection', function(socket) {
 
     var person = {
-      uuid: undefined,
-      screenName: undefined,
-      offering: undefined,
-      socket: socket
+      id: undefined, // assigned id
+      screenName: undefined, // their screen name
+      offering: undefined, // undefined or hall name
+      socket: socket // keep track of socket
     };
-    
+
     people.push(person);
 
     /**
@@ -38,14 +38,29 @@ module.exports = function(io) {
       person.screenName = screenName;
     });
 
+    socket.on('message', function(json) {
+      socket.emit('halls');
+    });
+
     /**
      * On message recieve
+     * messageRaw must have .to and .body
      */
-    socket.on('message', function(json) {
-      // TODO
-      var message = JSON.parse(json);
-      var to = people[0]; // Temporary
-      sendMessage(person, to, message.body)
+    socket.on('message', function(messageRaw) {
+      // Parse raw message as JSON
+      var message = JSON.parse(messageRaw);
+      // Don't send if body is not included
+      if (!message.body) {
+        return;
+      }
+      // Find recipient
+      var toPerson = findPersonById(message.to);
+      // Don't send if toPerson does not exist
+      if (!toPerson) {
+        return;
+      }
+      // Send message to recipient
+      sendMessage(person, toPerson, message.body)
     });
 
     /**
@@ -65,37 +80,64 @@ module.exports = function(io) {
   });
 
   /**
+   * Find person by id
+   * @param  {string} id      Person's id
+   * @return {object|null}    The person, or null if not found
+   */
+  function findPersonById(id) {
+    var result = null;
+    // Loop people
+    people.some(function(person) {
+      // Check id against person's id
+      if (person.id === id) {
+        // Set our result
+        result = person;
+        // Break from loop
+        return true;
+      }
+    });
+    return result;
+  }
+
+  /**
    * Pass message from one person to another
    * @param  {object} personFrom from person
    * @param  {object} personTo   to person
    * @param  {string} body       the message body
    */
   function sendMessage(personFrom, personTo, body) {
-    personTo.emit('message', body);
+    personTo.emit('message', {
+      from: personFrom.id,
+      body: body
+    });
   }
 
   /**
-   * Send update to all clients with current offer counts
+   * Send update to all clients with current offers
    */
   function updateOffers() {
-    var halls = {};
+    var offers = {};
 
     // Loop people
     people.forEach(function(person) {
       // Check if person is offering
       if (person.offering) {
         // Check if halls already has person's hall
-        if (!halls.hasOwnProperty(person.offering)) {
-          halls[person.offering] = 0;
+        if (!offers.hasOwnProperty(person.offering) ||
+            !Array.isArray(offers[person.offering])) {
+          offers[person.offering] = [];
         }
 
-        // Increment offers for hall
-        halls[person.offering] += 1;
+        // Add offer to hall offers
+        offers[person.offering].push({
+          id: person.id,
+          screenName: person.screenName
+        });
       }
     });
 
     // Emit offers to all clients
-    io.emit('offer update', halls);
+    io.emit('offer update', offers);
   }
 
 };

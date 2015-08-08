@@ -1,3 +1,5 @@
+var shortid = require('shortid');
+
 module.exports = function(io) {
 
   var people = [];
@@ -5,7 +7,7 @@ module.exports = function(io) {
   io.on('connection', function(socket) {
 
     var person = {
-      id: undefined, // assigned id
+      id: shortid.generate(), // random id
       screenName: undefined, // their screen name
       offering: undefined, // undefined or hall name
       socket: socket // keep track of socket
@@ -17,9 +19,12 @@ module.exports = function(io) {
      * On new offer
      */
     socket.on('offer new', function(hallName) {
-      person.offering = hallName;
-      // Update offers
-      updateOffers();
+      // Only if they have a valid screen name
+      if (screenNameValid(person.screenName)) {
+        person.offering = hallName;
+        // Update offers
+        updateOffers();
+      }
     });
 
     /**
@@ -35,11 +40,12 @@ module.exports = function(io) {
      * On screenname update
      */
     socket.on('screenname update', function(screenName) {
-      person.screenName = screenName;
-    });
-
-    socket.on('message', function(json) {
-      socket.emit('halls');
+      // Only update if it's valid
+      if (screenNameValid(screenName)) {
+        person.screenName = screenName;
+        // Update offers
+        updateOffers();
+      }
     });
 
     /**
@@ -55,8 +61,9 @@ module.exports = function(io) {
       }
       // Find recipient
       var toPerson = findPersonById(message.to);
-      // Don't send if toPerson does not exist
-      if (!toPerson) {
+      // Don't send if toPerson does not exist,
+      // or if they don't have a valid screen name
+      if (!toPerson || !screenNameValid(toPerson.screenName)) {
         return;
       }
       // Send message to recipient
@@ -78,6 +85,15 @@ module.exports = function(io) {
       updateOffers();
     });
   });
+
+  /**
+   * Check specified screen name for validity
+   * @param  {string} screenName the screen name
+   * @return {Boolean}           if it is valid
+   */
+  function screenNameValid(screenName) {
+    return typeof screenName === 'string' && screenName.length;
+  }
 
   /**
    * Find person by id
@@ -128,7 +144,6 @@ module.exports = function(io) {
           offers[person.offering] = [];
         }
 
-        // Add offer to hall offers
         offers[person.offering].push({
           id: person.id,
           screenName: person.screenName

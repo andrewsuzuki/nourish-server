@@ -52,9 +52,7 @@ module.exports = function(io) {
      * On message recieve
      * messageRaw must have .to and .body
      */
-    socket.on('message', function(messageRaw) {
-      // Parse raw message as JSON
-      var message = JSON.parse(messageRaw);
+    socket.on('message', function(message) {
       // Don't send if body is not included
       if (!message.body) {
         return;
@@ -122,7 +120,7 @@ module.exports = function(io) {
    * @param  {string} body       the message body
    */
   function sendMessage(personFrom, personTo, body) {
-    personTo.emit('message', {
+    personTo.socket.emit('message', {
       from: personFrom.id,
       body: body
     });
@@ -141,9 +139,11 @@ module.exports = function(io) {
         // Check if halls already has person's hall
         if (!offers.hasOwnProperty(person.offering) ||
             !Array.isArray(offers[person.offering])) {
+          // If not, then initialize array
           offers[person.offering] = [];
         }
 
+        // Add person to hall's array
         offers[person.offering].push({
           id: person.id,
           screenName: person.screenName
